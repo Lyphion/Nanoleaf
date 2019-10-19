@@ -342,7 +342,7 @@ public final class NanoleafAPI {
     }
 
     public void setPanelColor(LightPanel[] panels, Color[] colors) {
-        final Effect effect = Effect.createStaticEffect("StaticColor", panels, colors, panels.length);
+        final Effect effect = Effect.createStaticEffect("StaticColor", panels, colors, 0);
         effect.setAnimationType(AnimationType.CUSTOM);
 
         displayEffect(effect);
