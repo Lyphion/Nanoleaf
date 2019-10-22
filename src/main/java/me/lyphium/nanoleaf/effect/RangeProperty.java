@@ -42,7 +42,7 @@ public class RangeProperty extends Property {
         final RangeProperty property = new RangeProperty();
 
         for (Entry<String, Object> entry : properties.entrySet()) {
-            property.setProperty(entry.getKey(), entry.getValue());
+            property.properties.put(entry.getKey(), entry.getValue());
         }
 
         return property;

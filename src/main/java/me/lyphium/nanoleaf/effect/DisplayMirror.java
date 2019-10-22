@@ -4,6 +4,7 @@ import lombok.Getter;
 import me.lyphium.nanoleaf.api.NanoleafAPI;
 import me.lyphium.nanoleaf.panel.LightPanel;
 
+import java.awt.Color;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.ExecutorService;
@@ -20,7 +21,7 @@ public class DisplayMirror extends Thread {
     private Rectangle screen;
 
     private LightPanel[] panels;
-    private me.lyphium.nanoleaf.effect.Color[] colors;
+    private Color[] colors;
     private int[] pixels;
 
     private int smallW, smallH;
@@ -50,7 +51,7 @@ public class DisplayMirror extends Thread {
         this.smallW = (int) (screen.width * 0.15);
         this.smallH = (int) (screen.height * 0.25);
 
-        this.colors = new me.lyphium.nanoleaf.effect.Color[(smallW * smallH)];
+        this.colors = new Color[(smallW * smallH)];
         this.pixels = new int[(smallW * smallH * 3)];
 
         this.maxY = this.maxX = 0;
@@ -79,6 +80,7 @@ public class DisplayMirror extends Thread {
                     System.gc();
 
                 final long time = System.currentTimeMillis() - start;
+                System.out.println(time);
                 Thread.sleep(Math.max(0, delay - time));
             } catch (InterruptedException e) {
                 break;
@@ -112,11 +114,10 @@ public class DisplayMirror extends Thread {
             }
 
             final int size = pixels.length / 3;
-            colors[index++] = Color.fromRGB(
+            colors[index++] = new Color(
                     red / size,
                     green / size,
-                    blue / size,
-                    0
+                    blue / size
             );
         }
         screenhot.flush();

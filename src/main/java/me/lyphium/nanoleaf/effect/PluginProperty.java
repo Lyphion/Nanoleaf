@@ -72,7 +72,7 @@ public class PluginProperty extends Property {
         final PluginProperty property = new PluginProperty();
 
         for (Entry<String, Object> entry : properties.entrySet()) {
-            property.setProperty(entry.getKey(), entry.getValue());
+            property.properties.put(entry.getKey(), entry.getValue());
         }
 
         return property;

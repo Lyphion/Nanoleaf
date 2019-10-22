@@ -18,7 +18,6 @@ public class StatusCodeException extends RuntimeException {
         public BadRequestException() {
             super("400 Bad Request");
         }
-
     }
 
     public static class UnauthorizedException extends StatusCodeException {

@@ -9,7 +9,7 @@ import lombok.Getter;
 import me.lyphium.nanoleaf.effect.AnimationType;
 import me.lyphium.nanoleaf.effect.Color;
 import me.lyphium.nanoleaf.effect.Effect;
-import me.lyphium.nanoleaf.effect.EffectCommand;
+import me.lyphium.nanoleaf.effect.CommandType;
 import me.lyphium.nanoleaf.exception.StatusCodeException.*;
 import me.lyphium.nanoleaf.panel.LightPanel;
 import me.lyphium.nanoleaf.panel.Panel;
@@ -274,7 +274,7 @@ public final class NanoleafAPI {
 
     public void addEffect(Effect effect) {
         final JsonObject data = new JsonObject();
-        data.add("write", effect.toJson(EffectCommand.ADD));
+        data.add("write", effect.toJson(CommandType.ADD));
 
         executePutRequest(basisUrl + "/effects", data);
     }
@@ -304,7 +304,7 @@ public final class NanoleafAPI {
 
     public void displayEffect(Effect effect) {
         final JsonObject data = new JsonObject();
-        data.add("write", effect.toJson(EffectCommand.DISPLAY));
+        data.add("write", effect.toJson(CommandType.DISPLAY));
 
         executePutRequest(basisUrl + "/effects", data);
     }
@@ -314,7 +314,7 @@ public final class NanoleafAPI {
         copy.setDuration(duration);
 
         final JsonObject data = new JsonObject();
-        data.add("write", copy.toJson(EffectCommand.DISPLAY_TEMP));
+        data.add("write", copy.toJson(CommandType.DISPLAY_TEMP));
 
         executePutRequest(basisUrl + "/effects", data);
     }
@@ -325,7 +325,7 @@ public final class NanoleafAPI {
         effect.setDuration(duration);
 
         final JsonObject data = new JsonObject();
-        data.add("write", effect.toJson(EffectCommand.DISPLAY_TEMP));
+        data.add("write", effect.toJson(CommandType.DISPLAY_TEMP));
 
         executePutRequest(basisUrl + "/effects", data);
     }
@@ -341,15 +341,22 @@ public final class NanoleafAPI {
         displayEffect(effect);
     }
 
+    public void setPanelColor(List<LightPanel> panels, List<Color> colors) {
+        setPanelColor(panels.toArray(new LightPanel[0]), colors.toArray(new Color[0]));
+    }
+
     public void setPanelColor(LightPanel[] panels, Color[] colors) {
-        final Effect effect = Effect.createStaticEffect("StaticColor", panels, colors, 0);
+        final Effect effect = Effect.createStaticEffect("StaticColor", panels, colors);
         effect.setAnimationType(AnimationType.CUSTOM);
 
         displayEffect(effect);
     }
 
-    public void setPanelColor(List<LightPanel> panels, List<Color> colors) {
-        setPanelColor(panels.toArray(new LightPanel[0]), colors.toArray(new Color[0]));
+    public void setPanelColor(LightPanel[] panels, java.awt.Color[] colors) {
+        final Effect effect = Effect.createStaticEffect("StaticColor", panels, colors, 0);
+        effect.setAnimationType(AnimationType.CUSTOM);
+
+        displayEffect(effect);
     }
 
     public void fadeToColor(Color color) {

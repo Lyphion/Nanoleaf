@@ -2,7 +2,7 @@ package me.lyphium.nanoleaf.effect;
 
 import lombok.Getter;
 
-public enum EffectCommand {
+public enum CommandType {
 
     ADD("add"),
     RENAME("rename"),
@@ -16,7 +16,7 @@ public enum EffectCommand {
     @Getter
     private final String name;
 
-    EffectCommand(String name) {
+    CommandType(String name) {
         this.name = name;
     }
 
