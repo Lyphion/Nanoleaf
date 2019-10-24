@@ -1,29 +1,20 @@
 package me.lyphium.nanoleaf.api;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.google.gson.stream.JsonReader;
+import lombok.AccessLevel;
 import lombok.Getter;
-import me.lyphium.nanoleaf.effect.AnimationType;
-import me.lyphium.nanoleaf.effect.Color;
-import me.lyphium.nanoleaf.effect.Effect;
-import me.lyphium.nanoleaf.effect.CommandType;
+import me.lyphium.nanoleaf.effect.*;
 import me.lyphium.nanoleaf.exception.StatusCodeException.*;
-import me.lyphium.nanoleaf.panel.LightPanel;
-import me.lyphium.nanoleaf.panel.Panel;
-import me.lyphium.nanoleaf.panel.RhythmPanel;
+import me.lyphium.nanoleaf.panel.*;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
+@Getter
 public final class NanoleafAPI {
 
     // https://github.com/rowak/nanoleaf-aurora/blob/master/src/io/github/rowak/nanoleafapi/Aurora.java
@@ -34,20 +25,14 @@ public final class NanoleafAPI {
 
     public static final String URL_TEMPLATE = "http://%s:%d/api/%s/%s";
 
-    @Getter
     private final String ip;
-    private final String token;
-    private final String basisUrl;
+    @Getter(AccessLevel.NONE)
+    private final String token, basisUrl;
 
-    @Getter
     private String name;
-    @Getter
     private String serialNumber;
-    @Getter
     private String manufacturer;
-    @Getter
     private String firmwareVersion, hardwareVersion;
-    @Getter
     private String model;
 
     public NanoleafAPI(String ip, String token) {
@@ -66,8 +51,7 @@ public final class NanoleafAPI {
     }
 
     public JsonObject getAllInfo() {
-        final JsonElement element = executeGetRequest(basisUrl);
-        return element.getAsJsonObject();
+        return executeGetRequest(basisUrl).getAsJsonObject();
     }
 
     private JsonElement getStateInfo(State state) {
@@ -108,14 +92,6 @@ public final class NanoleafAPI {
         setBrightness(value, 0);
     }
 
-    public void increaseBrightness(int delta) {
-        setBrightness(getBrightness() + delta, 0);
-    }
-
-    public void decreaseBrightness(int delta) {
-        increaseBrightness(-delta);
-    }
-
     public void setBrightness(int value, int duration) {
         if (value < 0 || value > 100) {
             throw new IllegalArgumentException("Value must be between 0 and 100");
@@ -131,6 +107,15 @@ public final class NanoleafAPI {
         data.add("brightness", inner);
 
         executePutRequest(basisUrl + "/state", data);
+    }
+
+    public void increaseBrightness(int delta) {
+        final int value = getBrightness() + delta;
+        setBrightness(Math.max(0, Math.min(value, 100)), 0);
+    }
+
+    public void decreaseBrightness(int delta) {
+        increaseBrightness(-delta);
     }
 
     public byte getHue() {

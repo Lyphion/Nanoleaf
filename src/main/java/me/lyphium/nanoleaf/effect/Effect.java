@@ -344,7 +344,7 @@ public class Effect {
 
         for (int i = 0; i < panels.length; i++) {
             final LightPanel panel = panels[i];
-            final Color color = colors[i];
+            final java.awt.Color color = colors[i].getRGB();
 
             builder.append(" ");
             builder.append(panel.getId());                  //Panelid

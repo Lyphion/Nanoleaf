@@ -48,13 +48,7 @@ public class PrettyPrintStream extends PrintStream {
 
     @Override
     public void println(char[] x) {
-        final char[] prefixArray = getPrefix().toCharArray();
-
-        final char[] result = new char[prefixArray.length + x.length];
-        System.arraycopy(prefixArray, 0, result, 0, prefixArray.length);
-        System.arraycopy(x, 0, result, prefixArray.length, x.length);
-
-        super.println(result);
+        super.println(getPrefix() + new String(x));
     }
 
     @Override

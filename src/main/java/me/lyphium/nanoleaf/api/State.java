@@ -2,7 +2,6 @@ package me.lyphium.nanoleaf.api;
 
 import lombok.Getter;
 
-@Getter
 public enum State {
 
     ACTIVE("on"),
@@ -13,6 +12,7 @@ public enum State {
     COLOR_MODE("colorMode");
 
     //Key for Json
+    @Getter
     private final String symbol;
 
     State(String symbol) {
