@@ -51,7 +51,7 @@ public class DisplayMirror extends Thread {
         this.smallW = (int) (screen.width * 0.15);
         this.smallH = (int) (screen.height * 0.25);
 
-        this.colors = new Color[(smallW * smallH)];
+        this.colors = new Color[panels.length];
         this.pixels = new int[(smallW * smallH * 3)];
 
         this.maxY = this.maxX = 0;
