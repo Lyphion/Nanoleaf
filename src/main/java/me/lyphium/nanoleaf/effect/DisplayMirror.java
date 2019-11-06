@@ -11,12 +11,14 @@ import java.util.concurrent.Executors;
 
 public class DisplayMirror extends Thread {
 
+    public static DisplayMirror CURRENT_MIRROR = null;
+
     private final NanoleafAPI api;
     private final int delay;
 
-    private Robot robot;
     private ExecutorService service;
     private Rectangle screen;
+    private Robot robot;
 
     private LightPanel[] panels;
 
@@ -70,7 +72,7 @@ public class DisplayMirror extends Thread {
                 update();
 
                 final long time = System.currentTimeMillis() - start;
-                System.out.println(time);
+//                System.out.println(time);
 
                 Thread.sleep(Math.max(0, delay - time));
             } catch (InterruptedException e) {
@@ -116,7 +118,7 @@ public class DisplayMirror extends Thread {
         }
         screenhot.flush();
 
-        //Set max memory ~200M
+//      Set max memory ~200M
 //        System.gc();
 
         if (!running)
@@ -128,6 +130,12 @@ public class DisplayMirror extends Thread {
         running = false;
         service.shutdown();
         interrupt();
+    }
+
+    public static void stopMirror() {
+        if (CURRENT_MIRROR != null)
+            CURRENT_MIRROR.cancel();
+        CURRENT_MIRROR = null;
     }
 
 }
