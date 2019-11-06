@@ -332,6 +332,33 @@ public class Effect {
         return createStaticEffect(name, panels, colors, 0);
     }
 
+    public static Effect createStaticEffect(String name, LightPanel[] panels, int[][] colors, int transitiontime) {
+        final Effect effect = new Effect();
+
+        effect.setName(name);
+        effect.setAnimationType(AnimationType.STATIC);
+        effect.setLooping(false);
+
+        final StringBuilder builder = new StringBuilder();
+        builder.append(panels.length);
+
+        for (int i = 0; i < panels.length; i++) {
+            final LightPanel panel = panels[i];
+
+            builder.append(" ");
+            builder.append(panel.getId());                  //Panelid
+            builder.append(" 1 ");                          //Framenr
+            builder.append(colors[i][0]).append(" ");       //Red
+            builder.append(colors[i][1]).append(" ");       //Green
+            builder.append(colors[i][2]).append(" ");       //Blue
+            builder.append("0 ").append(transitiontime);    //Transitiontime
+        }
+
+        effect.setAnimationData(builder.toString());
+
+        return effect;
+    }
+
     public static Effect createStaticEffect(String name, LightPanel[] panels, Color[] colors, int transitiontime) {
         final Effect effect = new Effect();
 

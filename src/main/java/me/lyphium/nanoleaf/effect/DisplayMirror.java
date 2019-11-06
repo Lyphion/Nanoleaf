@@ -4,7 +4,6 @@ import lombok.Getter;
 import me.lyphium.nanoleaf.api.NanoleafAPI;
 import me.lyphium.nanoleaf.panel.LightPanel;
 
-import java.awt.Color;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.concurrent.ExecutorService;
@@ -12,17 +11,14 @@ import java.util.concurrent.Executors;
 
 public class DisplayMirror extends Thread {
 
-    private final ExecutorService service = Executors.newCachedThreadPool();
-
     private final NanoleafAPI api;
     private final int delay;
 
     private Robot robot;
+    private ExecutorService service;
     private Rectangle screen;
 
     private LightPanel[] panels;
-    private Color[] colors;
-    private int[] pixels;
 
     private int smallW, smallH;
     private float maxY, maxX;
@@ -46,13 +42,11 @@ public class DisplayMirror extends Thread {
             return;
         }
 
+        this.service = Executors.newCachedThreadPool();
         this.panels = api.getPanelsRotated().toArray(new LightPanel[0]);
 
         this.smallW = (int) (screen.width * 0.15);
         this.smallH = (int) (screen.height * 0.25);
-
-        this.colors = new Color[panels.length];
-        this.pixels = new int[(smallW * smallH * 3)];
 
         this.maxY = this.maxX = 0;
         for (LightPanel panel : panels) {
@@ -69,18 +63,15 @@ public class DisplayMirror extends Thread {
     public void run() {
         running = true;
 
-        int k = 0;
         while (running) {
             try {
                 final long start = System.currentTimeMillis();
 
                 update();
 
-                if (k % 40 == 0)
-                    System.gc();
-
                 final long time = System.currentTimeMillis() - start;
                 System.out.println(time);
+
                 Thread.sleep(Math.max(0, delay - time));
             } catch (InterruptedException e) {
                 break;
@@ -94,11 +85,15 @@ public class DisplayMirror extends Thread {
 
     private void update() {
         final BufferedImage screenhot = robot.createScreenCapture(screen);
+        final int size = smallW * smallH;
+
+        final int[][] colors = new int[panels.length][3];
+        final int[] pixels = new int[size * 3];
 
         int index = 0;
         for (LightPanel panel : panels) {
-            final int newX = (int) (panel.getX() / maxX * screen.width * 0.85);
-            final int newY = (int) (panel.getY() / maxY * screen.height * 0.75);
+            final int newX = (int) (panel.getX() / maxX * screen.width * 0.85f);
+            final int newY = (int) (panel.getY() / maxY * screen.height * 0.75f);
 
             screenhot.getData().getPixels(
                     newX, newY,
@@ -113,14 +108,16 @@ public class DisplayMirror extends Thread {
                 blue += pixels[i + 2];
             }
 
-            final int size = pixels.length / 3;
-            colors[index++] = new Color(
-                    red / size,
-                    green / size,
-                    blue / size
-            );
+            colors[index][0] = red / size;
+            colors[index][1] = green / size;
+            colors[index][2] = blue / size;
+
+            index++;
         }
         screenhot.flush();
+
+        //Set max memory ~200M
+//        System.gc();
 
         if (!running)
             return;
