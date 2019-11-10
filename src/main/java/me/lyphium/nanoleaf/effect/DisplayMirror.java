@@ -6,12 +6,16 @@ import me.lyphium.nanoleaf.panel.LightPanel;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class DisplayMirror extends Thread {
 
     public static DisplayMirror CURRENT_MIRROR = null;
+
+    private final List<Integer> times = new ArrayList<>();
 
     private final NanoleafAPI api;
     private final int delay;
@@ -22,7 +26,6 @@ public class DisplayMirror extends Thread {
 
     private LightPanel[] panels;
 
-    private int smallW, smallH;
     private float maxY, maxX;
 
     @Getter
@@ -47,9 +50,6 @@ public class DisplayMirror extends Thread {
         this.service = Executors.newCachedThreadPool();
         this.panels = api.getPanelsRotated().toArray(new LightPanel[0]);
 
-        this.smallW = (int) (screen.width * 0.15);
-        this.smallH = (int) (screen.height * 0.25);
-
         this.maxY = this.maxX = 0;
         for (LightPanel panel : panels) {
             if (panel.getX() > maxX) {
@@ -71,7 +71,8 @@ public class DisplayMirror extends Thread {
 
                 update();
 
-                final long time = System.currentTimeMillis() - start;
+                final int time = (int) (System.currentTimeMillis() - start);
+                times.add(time);
 //                System.out.println(time);
 
                 Thread.sleep(Math.max(0, delay - time));
@@ -86,18 +87,25 @@ public class DisplayMirror extends Thread {
     }
 
     private void update() {
-        final BufferedImage screenhot = robot.createScreenCapture(screen);
+        final int scaledWidth = screen.width / 30;
+        final int scaledHeight = screen.height / 30;
+        final int smallW = (int) (scaledWidth * 0.15);
+        final int smallH = (int) (scaledHeight * 0.25);
         final int size = smallW * smallH;
+
+        final BufferedImage screenhot = robot.createScreenCapture(screen);
+        final BufferedImage resized = createResizedCopy(screenhot, scaledWidth, scaledHeight);
 
         final int[][] colors = new int[panels.length][3];
         final int[] pixels = new int[size * 3];
 
-        int index = 0;
-        for (LightPanel panel : panels) {
-            final int newX = (int) (panel.getX() / maxX * screen.width * 0.85f);
-            final int newY = (int) (panel.getY() / maxY * screen.height * 0.75f);
+        for (int index = 0; index < panels.length; index++) {
+            final LightPanel panel = panels[index];
 
-            screenhot.getData().getPixels(
+            final int newX = (int) (panel.getX() / maxX * scaledWidth * 0.85f);
+            final int newY = (int) (panel.getY() / maxY * scaledHeight * 0.75f);
+
+            resized.getData().getPixels(
                     newX, newY,
                     smallW, smallH,
                     pixels
@@ -113,17 +121,14 @@ public class DisplayMirror extends Thread {
             colors[index][0] = red / size;
             colors[index][1] = green / size;
             colors[index][2] = blue / size;
-
-            index++;
         }
-        screenhot.flush();
-
-//      Set max memory ~200M
-//        System.gc();
 
         if (!running)
             return;
         service.submit(() -> api.setPanelColor(panels, colors));
+
+        resized.flush();
+        screenhot.flush();
     }
 
     public void cancel() {
@@ -132,10 +137,26 @@ public class DisplayMirror extends Thread {
         interrupt();
     }
 
+    private static BufferedImage createResizedCopy(Image originalImage, int scaledWidth, int scaledHeight) {
+        final BufferedImage scaledBI = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
+        final Graphics2D g = scaledBI.createGraphics();
+
+        g.setComposite(AlphaComposite.Src);
+        g.drawImage(originalImage, 0, 0, scaledWidth, scaledHeight, null);
+        g.dispose();
+
+        return scaledBI;
+    }
+
     public static void stopMirror() {
-        if (CURRENT_MIRROR != null)
+        if (CURRENT_MIRROR != null) {
             CURRENT_MIRROR.cancel();
-        CURRENT_MIRROR = null;
+
+            final int time = CURRENT_MIRROR.times.parallelStream().mapToInt(i -> i).sum() / CURRENT_MIRROR.times.size();
+            System.out.println("Average computing time: " + time);
+
+            CURRENT_MIRROR = null;
+        }
     }
 
 }
