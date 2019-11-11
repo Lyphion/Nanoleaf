@@ -87,10 +87,10 @@ public class DisplayMirror extends Thread {
     }
 
     private void update() {
-        final int scaledWidth = screen.width / 30;
-        final int scaledHeight = screen.height / 30;
-        final int smallW = (int) (scaledWidth * 0.15);
-        final int smallH = (int) (scaledHeight * 0.25);
+        final int scaledWidth = screen.width / 40;
+        final int scaledHeight = screen.height / 40;
+        final int smallW = (int) (scaledWidth * 0.15f);
+        final int smallH = (int) (scaledHeight * 0.25f);
         final int size = smallW * smallH;
 
         final BufferedImage screenhot = robot.createScreenCapture(screen);
@@ -127,8 +127,8 @@ public class DisplayMirror extends Thread {
             return;
         service.submit(() -> api.setPanelColor(panels, colors));
 
-        resized.flush();
         screenhot.flush();
+        resized.flush();
     }
 
     public void cancel() {
@@ -137,15 +137,15 @@ public class DisplayMirror extends Thread {
         interrupt();
     }
 
-    private static BufferedImage createResizedCopy(Image originalImage, int scaledWidth, int scaledHeight) {
-        final BufferedImage scaledBI = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
-        final Graphics2D g = scaledBI.createGraphics();
+    private static BufferedImage createResizedCopy(Image img, int scaledWidth, int scaledHeight) {
+        final BufferedImage resized = new BufferedImage(scaledWidth, scaledHeight, BufferedImage.TYPE_INT_RGB);
+        final Image image = img.getScaledInstance(scaledWidth, scaledHeight, Image.SCALE_FAST);
 
-        g.setComposite(AlphaComposite.Src);
-        g.drawImage(originalImage, 0, 0, scaledWidth, scaledHeight, null);
-        g.dispose();
+        final Graphics2D graphics = resized.createGraphics();
+        graphics.drawImage(image, 0, 0, null);
 
-        return scaledBI;
+        image.flush();
+        return resized;
     }
 
     public static void stopMirror() {
@@ -153,7 +153,7 @@ public class DisplayMirror extends Thread {
             CURRENT_MIRROR.cancel();
 
             final int time = CURRENT_MIRROR.times.parallelStream().mapToInt(i -> i).sum() / CURRENT_MIRROR.times.size();
-            System.out.println("Average computing time: " + time);
+            System.out.println("Average computing time: " + time + "ms");
 
             CURRENT_MIRROR = null;
         }
